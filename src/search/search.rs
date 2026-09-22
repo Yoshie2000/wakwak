@@ -665,9 +665,7 @@ fn qsearch<Node: NodeType>(
     if let Some(entry) = tt_entry {
         let score = entry.score();
         if entry.flag().bounds_match(score, alpha, beta) {
-            if tt_move.is_some() {
-                thread.stack[ply].mv = tt_move;
-            }
+            thread.stack[ply].mv = tt_entry.and_then(|e| e.best_move());
             return score;
         }
     }
