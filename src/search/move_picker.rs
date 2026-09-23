@@ -304,8 +304,18 @@ impl MovePicker {
                 continue;
             }
 
-            scored.1 =
-                mvv(board, mv) * 8 + Params::noisy_mp_history(thread.history.as_ref(), board, mv);
+            let ttduck_bonus = if self
+                .tt_move
+                .is_some_and(|tt_move| tt_move.duck() == mv.duck())
+            {
+                5000
+            } else {
+                0
+            };
+
+            scored.1 = mvv(board, mv) * 8
+                + Params::noisy_mp_history(thread.history.as_ref(), board, mv)
+                + ttduck_bonus;
         }
 
         moves[start..].sort_unstable_by_key(|m| Reverse(m.1));
@@ -328,8 +338,18 @@ impl MovePicker {
             }
             let is_neutral = self.neutral_ducks.has(mv.duck());
 
+            let ttduck_bonus = if self
+                .tt_move
+                .is_some_and(|tt_move| tt_move.duck() == mv.duck())
+            {
+                5000
+            } else {
+                0
+            };
+
             scored.1 = Params::quiet_mp_history(thread.history.as_ref(), board, indices, mv)
-                - Params::mp_quiet_neutral_malus() * is_neutral as i32;
+                - Params::mp_quiet_neutral_malus() * is_neutral as i32
+                + ttduck_bonus;
         }
 
         moves[start..].sort_unstable_by_key(|m| Reverse(m.1));
