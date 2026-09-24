@@ -501,7 +501,7 @@ fn search<Node: NodeType>(
                     r += Params::lmr_pv() * !Node::PV as i32;
                     r -= Params::lmr_in_check() * pos.board().in_check() as i32;
                     r -= Params::lmr_history() * lmr_history / 1024;
-                    r += 384 * move_counts[src][dest] as i32;
+                    r += 128 * move_counts[src][dest] as i32;
                     r / 1024
                 } else {
                     0
