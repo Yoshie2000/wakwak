@@ -236,6 +236,7 @@ fn search<Node: NodeType>(
     */
     let tt_entry = shared.tt.probe(pos.board().hash());
     let mut tt_move = tt_entry.and_then(|e| e.best_move());
+    let (mut tt_value, mut tt_flag) = tt_entry.map(|e| (e.score(), e.flag())).unzip();
 
     if !Node::ROOT
         && let Some(entry) = tt_entry
@@ -265,6 +266,10 @@ fn search<Node: NodeType>(
                 return entry.score();
             }
             tt_move = Some(mv);
+            if tt_value.is_none() {
+                tt_value = Some(entry.score());
+                tt_flag = Some(entry.flag());
+            }
         }
     }
 
@@ -272,15 +277,13 @@ fn search<Node: NodeType>(
     let corr = thread.history.corr(pos.board());
     let static_eval = adjust_eval(raw_eval, corr);
 
-    let eval = if let Some(entry) = tt_entry
-        && !entry.score().is_mate()
-        && entry
-            .flag()
-            .bounds_match(entry.score(), static_eval, static_eval)
-    {
-        entry.score()
-    } else {
-        static_eval
+    let eval = match (tt_value, tt_flag) {
+        (Some(tt_value), Some(tt_flag))
+            if !tt_value.is_mate() && tt_flag.bounds_match(tt_value, static_eval, static_eval) =>
+        {
+            tt_value
+        }
+        _ => static_eval,
     };
 
     let improving = {
