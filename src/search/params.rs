@@ -467,11 +467,12 @@ impl Params {
     }
 
     #[inline]
-    pub fn lmr(depth: i32, unique_moves: i32) -> i32 {
+    pub fn lmr(depth: i32, unique_moves: i32, ducks_for_move: i32) -> i32 {
         let log_depth = depth.ilog2() as i32;
         let log_moves = (unique_moves + 1).ilog2() as i32;
+        let log_ducks = (ducks_for_move + 2).ilog2() as i32; // never emit 0 here
 
-        Self::quiet_lmr_base() + Self::quiet_lmr_scale() * log_depth * log_moves
+        Self::quiet_lmr_base() + Self::quiet_lmr_scale() * log_depth * log_moves * log_ducks
     }
 
     #[inline]
